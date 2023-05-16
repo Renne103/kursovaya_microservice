@@ -1,0 +1,320 @@
+definitions:
+  internal_app_api.Balance:
+    properties:
+      balance:
+        type: number
+    type: object
+  internal_app_api.BalanceReplenishment:
+    properties:
+      replenishment:
+        type: number
+      user_id:
+        type: integer
+    type: object
+  internal_app_api.Confirmation:
+    properties:
+      cost:
+        type: number
+      order_id:
+        type: integer
+      service_id:
+        type: integer
+      service_name:
+        type: string
+      user_id:
+        type: integer
+    type: object
+  internal_app_api.DebitingMoney:
+    properties:
+      debit_cost:
+        type: number
+      user_id:
+        type: integer
+    type: object
+  internal_app_api.Page:
+    properties:
+      list:
+        items:
+          $ref: '#/definitions/kursach_internal_app_service_pagination.Report'
+        type: array
+      next_cursor:
+        type: string
+      prev_cursor:
+        type: string
+    type: object
+  internal_app_api.Refund:
+    properties:
+      order_id:
+        type: integer
+    type: object
+  internal_app_api.ReportLink:
+    properties:
+      link:
+        type: string
+    type: object
+  internal_app_api.ReportRequest:
+    properties:
+      date:
+        type: string
+    type: object
+  internal_app_api.Reserve:
+    properties:
+      cost:
+        type: number
+      order_id:
+        type: integer
+      service_id:
+        type: integer
+      service_name:
+        type: string
+      user_id:
+        type: integer
+    type: object
+  internal_app_api.Transfer:
+    properties:
+      cost:
+        type: number
+      recipient_id:
+        type: integer
+      recipient_name:
+        type: string
+      sender_id:
+        type: integer
+      sender_name:
+        type: string
+    type: object
+  internal_app_api.UserID:
+    properties:
+      id:
+        type: integer
+    type: object
+  kursach_internal_app_service_pagination.Report:
+    properties:
+      cost:
+        type: number
+      description:
+        type: string
+      operation_time:
+        type: string
+      transaction_id:
+        type: integer
+    type: object
+info:
+  contact: {}
+paths:
+  /accounting/report_link:
+    post:
+      consumes:
+      - application/json
+      description: Метод по году и месяцу возвращает ссылку на скачивание отчёта
+      parameters:
+      - description: Входные параметры
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/internal_app_api.ReportRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_app_api.ReportLink'
+      summary: Получение ссылки с отчётом за месяц
+      tags:
+      - accounting
+  /balance/get_balance:
+    post:
+      consumes:
+      - application/json
+      description: Возвращает баланс пользователя по его id
+      parameters:
+      - description: Входные параметры
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/internal_app_api.UserID'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_app_api.Balance'
+      summary: Получение баланса пользователя
+      tags:
+      - balance
+  /balance/transfer_money:
+    post:
+      consumes:
+      - application/json
+      description: Метод перевода денег от пользователя к пользователю
+      parameters:
+      - description: Входные параметры
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/internal_app_api.Transfer'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+      summary: Перевод денег
+      tags:
+      - balance
+  /balance/up_balance:
+    post:
+      consumes:
+      - application/json
+      description: Пополняет баланс пользователя или создаёт его при первом пополнении
+      parameters:
+      - description: Входные параметры
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/internal_app_api.BalanceReplenishment'
+      responses:
+        "200":
+          description: OK
+      summary: Пополнение или инициализация баланса
+      tags:
+      - balance
+  /balance/withdraw_money:
+    post:
+      consumes:
+      - application/json
+      description: Метод снимает указанное количество средств со счёта
+      parameters:
+      - description: Входные параметры
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/internal_app_api.DebitingMoney'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+      summary: Снятие денег со счёта
+      tags:
+      - balance
+  /sales/reserve_money:
+    post:
+      consumes:
+      - application/json
+      description: Резервирование средств с основного баланса на отдельном счете
+      parameters:
+      - description: Входные параметры
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/internal_app_api.Reserve'
+      responses:
+        "200":
+          description: OK
+      summary: Резервирование средств
+      tags:
+      - sales
+  /sales/return_money:
+    post:
+      consumes:
+      - application/json
+      description: Разрезервирование средств и возвращение их на баланс пользователя
+        при отмене операции
+      parameters:
+      - description: Входные параметры
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/internal_app_api.Refund'
+      responses:
+        "200":
+          description: OK
+      summary: Возвращение средств
+      tags:
+      - sales
+  /sales/revenue_confirmation:
+    post:
+      consumes:
+      - application/json
+      description: Списывает из резерва деньги, добавляет данные в отчет для бухгалтерии
+      parameters:
+      - description: Входные параметры
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/internal_app_api.Confirmation'
+      responses:
+        "200":
+          description: OK
+      summary: Метод признания выручки
+      tags:
+      - sales
+  /user_transaction/cost_sort:
+    get:
+      description: Сортирует транзакции пользователя по стоимости и с использованием
+        пагинации
+      parameters:
+      - description: сортировка по возрастанию — true, по убыванию — false
+        in: query
+        name: increase
+        required: true
+        type: string
+      - description: id пользователя
+        in: query
+        name: user_id
+        required: true
+        type: integer
+      - description: курсор пагинации
+        in: query
+        name: cursor
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_app_api.Page'
+      summary: Сортировка транзакций по стоимости c пагинацией
+      tags:
+      - pagination
+  /user_transaction/time_sort:
+    get:
+      description: Сортирует транзакции пользователя по времени и с использованием
+        пагинации
+      parameters:
+      - description: сортировка по возрастанию — true, по убыванию — false
+        in: query
+        name: increase
+        required: true
+        type: string
+      - description: id пользователя
+        in: query
+        name: user_id
+        required: true
+        type: integer
+      - description: курсор пагинации
+        in: query
+        name: cursor
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_app_api.Page'
+      summary: Сортировка транзакций по времени с пагинацией
+      tags:
+      - pagination
+swagger: "2.0"

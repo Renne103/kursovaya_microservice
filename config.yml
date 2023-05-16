@@ -1,0 +1,4 @@
+  postgres_dsn: host=localhost port=5435 user=postgres password=devpass dbname=postgres sslmode=disable
+  api:
+    host: 0.0.0.0
+    port: 8080
